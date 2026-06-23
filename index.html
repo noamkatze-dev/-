@@ -5,8 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Modes Carousel</title>
 <style>
+@font-face {
+  font-family: 'HaimVariable';
+  src: url('HaimVariable-VF-TRIAL.ttf') format('truetype');
+  font-weight: 100 900;
+}
+@font-face {
+  font-family: 'HaimClassic';
+  src: url('haim-classic-regular-fm.otf') format('opentype');
+  font-weight: 400;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#000;font-family:sans-serif;overflow:hidden;}
+body{background:#000;font-family:'HaimVariable',sans-serif;overflow:hidden;}
 
 /* Full-screen canvas area */
 #mc-right{
@@ -33,9 +43,10 @@ body{background:#000;font-family:sans-serif;overflow:hidden;}
   position:fixed;top:28px;left:36px;z-index:10;
   pointer-events:none;
 }
-.mc-label{font-size:10px;font-weight:600;letter-spacing:0.1em;color:rgba(255,255,255,0.55);text-transform:uppercase;margin-bottom:4px;}
-.mc-title{font-size:26px;font-weight:500;color:#FF0000;margin-bottom:4px;line-height:1.1;text-shadow:0 1px 8px rgba(0,0,0,0.3);}
-.mc-desc{font-size:12px;color:rgba(255,255,255,0.7);line-height:1.55;max-width:340px;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.mc-label{font-size:10px;font-weight:600;font-family:'HaimVariable',sans-serif;letter-spacing:0.1em;color:rgba(255,255,255,0.55);text-transform:uppercase;margin-bottom:4px;}
+.mc-title{font-size:26px;font-weight:500;font-family:'HaimVariable',sans-serif;color:#FF0000;margin-bottom:4px;line-height:1.1;text-shadow:0 1px 8px rgba(0,0,0,0.3);}
+.mc-desc{font-size:12px;font-family:'HaimVariable',sans-serif;color:rgba(255,255,255,0.7);line-height:1.55;max-width:340px;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+.mc-num{font-size:11px;font-family:'HaimClassic',sans-serif;font-size:11.4px;color:rgba(255,255,255,0.5);}
 
 /* Nav dots top-right */
 .nav-area{
@@ -47,10 +58,8 @@ body{background:#000;font-family:sans-serif;overflow:hidden;}
 .mc-dots{display:flex;gap:6px;}
 .mc-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.35);cursor:pointer;transition:all 0.2s;}
 .mc-dot.active{background:#FF0000;transform:scale(1.3);}
-.mc-num{font-size:11px;color:rgba(255,255,255,0.5);}
-
 /* Export bar bottom */
-.exp-btn{font-family:sans-serif;font-size:11px;font-weight:500;letter-spacing:0.05em;padding:8px 18px;border-radius:100px;border:1.5px solid rgba(255,255,255,0.6);background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);color:#fff;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.exp-btn{font-family:'HaimVariable',sans-serif;font-size:11px;font-weight:500;letter-spacing:0.05em;padding:8px 18px;border-radius:100px;border:1.5px solid rgba(255,255,255,0.6);background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);color:#fff;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
 .exp-btn:hover{background:rgba(255,255,255,0.15);}
 .exp-btn:disabled{opacity:0.4;cursor:not-allowed;}
 .exp-btn.recording{background:#FF0000;border-color:#FF0000;color:#fff;}
@@ -210,9 +219,12 @@ function runFixation() {
       ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
       ctx.strokeStyle=RED; ctx.lineWidth=3; ctx.stroke();
       if(fix.duration>250) {
-        ctx.fillStyle=RED; ctx.font='700 13px sans-serif';
+        ctx.fillStyle=RED;
+        ctx.font='400 13.4px HaimClassic,sans-serif'; // numbers: 13px * 1.032
         ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-        ctx.fillText(Math.round(fix.duration)+'ms', cx, cy+r+18);
+        ctx.fillText(Math.round(fix.duration), cx, cy+r+18);
+        ctx.font='500 13px HaimVariable,sans-serif';
+        ctx.fillText('ms', cx + ctx.measureText(Math.round(fix.duration)+'').width*0.5 + 3, cy+r+18);
       }
     }
   }
@@ -297,7 +309,8 @@ function runScanPath() {
       ctx.fillStyle='rgba(255,0,0,0.15)'; ctx.fill();
       ctx.beginPath(); ctx.arc(cx,cy,NODE_R,0,Math.PI*2);
       ctx.strokeStyle=RED; ctx.lineWidth=3; ctx.stroke();
-      ctx.fillStyle=RED; ctx.font=`700 ${Math.round(NODE_R*0.9)}px sans-serif`;
+      ctx.fillStyle=RED;
+      ctx.font=`400 ${Math.round(NODE_R*0.9*1.032)}px HaimClassic,sans-serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(j+1, cx, cy);
     }
@@ -389,7 +402,7 @@ function runFirstFix() {
       ctx.strokeStyle='rgba(255,0,0,0.45)'; ctx.lineWidth=2; ctx.stroke();
       ctx.beginPath(); ctx.arc(cx,cy,20,0,Math.PI*2);
       ctx.fillStyle=RED; ctx.fill();
-      ctx.fillStyle=RED; ctx.font='700 14px sans-serif';
+      ctx.fillStyle=RED; ctx.font='500 14px HaimVariable,sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='alphabetic';
       ctx.fillText('First fixation', cx, cy-50);
       if(elapsed>2200) { phase='flash'; start=ts; }
