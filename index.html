@@ -310,7 +310,7 @@ function runScanPath() {
 }
 
 function runHeatmap() {
-  const hmW=120, hmH=68, hm=new Float32Array(hmW*hmH);
+  const hmW=320, hmH=180, hm=new Float32Array(hmW*hmH);
   const sigma=0.10*Math.max(hmW,hmH), r=Math.ceil(3*sigma), inv2=1/(2*sigma*sigma);
   const allPts=[];
   for(let rep=0;rep<3;rep++) for(const p of gazeLog) {
