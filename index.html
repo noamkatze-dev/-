@@ -73,8 +73,8 @@ body{background:#000;font-family:'HaimVariable',sans-serif;overflow:hidden;}
   </div>
 </div>
 
-<script>
-const RED = '#FF0000';
+
+<script type="module">
 const MODES = [
   { name:'Gaze',          num:'01 / 06', desc:'Raw gaze positions sampled continuously — every point where the eye looked, frame by frame.' },
   { name:'Fixation',      num:'02 / 06', desc:'Sustained gaze on a single region for ≥200ms. Indicates active cognitive processing.' },
@@ -395,6 +395,59 @@ function getRecordDuration() {
   return (parseFloat(document.getElementById('rec-dur').value)||5)*1000;
 }
 
+function setStatus(msg) {
+  document.getElementById('exp-status').textContent = msg;
+}
+
+// ── ffmpeg.wasm loader ────────────────────────────────────────────────
+let ffmpegReady = false;
+let ffmpegLoading = false;
+let ffmpegInstance = null;
+
+async function loadFFmpeg() {
+  if(ffmpegReady) return ffmpegInstance;
+  if(ffmpegLoading) {
+    // wait until loaded
+    await new Promise(r => { const t = setInterval(()=>{ if(ffmpegReady){clearInterval(t);r();} },100); });
+    return ffmpegInstance;
+  }
+  ffmpegLoading = true;
+  setStatus('Loading ffmpeg.wasm (~30MB first time)...');
+  const { FFmpeg } = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
+  const { fetchFile, toBlobURL } = await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
+  window._fetchFile = fetchFile;
+  const ff = new FFmpeg();
+  const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  await ff.load({
+    coreURL: await toBlobURL(baseURL+'/ffmpeg-core.js', 'text/javascript'),
+    wasmURL: await toBlobURL(baseURL+'/ffmpeg-core.wasm', 'application/wasm'),
+  });
+  ffmpegInstance = ff;
+  ffmpegReady = true;
+  setStatus('');
+  return ff;
+}
+
+// start loading ffmpeg in background immediately
+loadFFmpeg().catch(()=>{});
+
+async function webmToMp4(webmBlob, name) {
+  const ff = await loadFFmpeg();
+  const { fetchFile } = window._fetchFile ? { fetchFile: window._fetchFile } : await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
+  setStatus('Converting to MP4...');
+  await ff.writeFile('input.webm', await fetchFile(webmBlob));
+  await ff.exec(['-i','input.webm','-c:v','libx264','-preset','fast','-pix_fmt','yuv420p','output.mp4']);
+  const data = await ff.readFile('output.mp4');
+  const mp4Blob = new Blob([data.buffer], {type:'video/mp4'});
+  const url = URL.createObjectURL(mp4Blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=name+'.mp4'; a.click();
+  URL.revokeObjectURL(url);
+  await ff.deleteFile('input.webm');
+  await ff.deleteFile('output.mp4');
+  setStatus('');
+}
+
 function recordMode(idx) {
   return new Promise((resolve) => {
     stopFlag=true; if(raf) cancelAnimationFrame(raf); clearTimeout(window._mcTimer);
@@ -405,12 +458,9 @@ function recordMode(idx) {
       const recorder = new MediaRecorder(stream, {mimeType});
       const chunks = [];
       recorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, {type:'video/webm'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href=url; a.download=NAMES[idx]+'.webm'; a.click();
-        URL.revokeObjectURL(url);
+      recorder.onstop = async () => {
+        const webmBlob = new Blob(chunks, {type:'video/webm'});
+        await webmToMp4(webmBlob, NAMES[idx]);
         resolve();
       };
       recorder.start();
@@ -425,33 +475,31 @@ function recordMode(idx) {
 
 async function recordAll() {
   const btn=document.getElementById('exp-all');
-  const status=document.getElementById('exp-status');
   btn.disabled=true; btn.classList.add('recording');
   document.getElementById('exp-current').disabled=true;
   for(let i=0;i<6;i++) {
-    status.textContent='Recording ' + (i+1) + '/6 — ' + MODES[i].name + '...';
+    setStatus('Recording ' + (i+1) + '/6 — ' + MODES[i].name + '...');
     await recordMode(i);
     await new Promise(r=>setTimeout(r,300));
   }
-  status.textContent='✓ All 6 videos downloaded';
+  setStatus('✓ All 6 MP4s downloaded');
   btn.disabled=false; btn.classList.remove('recording');
   document.getElementById('exp-current').disabled=false;
   goTo(cur);
-  setTimeout(()=>{status.textContent='';},3000);
+  setTimeout(()=>setStatus(''),3000);
 }
 
 async function recordCurrent() {
   const btn=document.getElementById('exp-current');
-  const status=document.getElementById('exp-status');
   btn.disabled=true; btn.classList.add('recording');
   document.getElementById('exp-all').disabled=true;
-  status.textContent='Recording — ' + MODES[cur].name + '...';
+  setStatus('Recording — ' + MODES[cur].name + '...');
   await recordMode(cur);
-  status.textContent='✓ ' + NAMES[cur] + '.webm downloaded';
+  setStatus('✓ ' + NAMES[cur] + '.mp4 downloaded');
   btn.disabled=false; btn.classList.remove('recording');
   document.getElementById('exp-all').disabled=false;
   goTo(cur);
-  setTimeout(()=>{status.textContent='';},3000);
+  setTimeout(()=>setStatus(''),3000);
 }
 
 document.getElementById('exp-current').onclick = recordCurrent;
