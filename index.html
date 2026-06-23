@@ -431,20 +431,20 @@ async function loadFFmpeg() {
 // start loading ffmpeg in background immediately
 loadFFmpeg().catch(()=>{});
 
-async function webmToMp4(webmBlob, name) {
+async function webmToGif(webmBlob, name) {
   const ff = await loadFFmpeg();
   const { fetchFile } = window._fetchFile ? { fetchFile: window._fetchFile } : await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js');
-  setStatus('Converting to MP4...');
+  setStatus('Converting to GIF...');
   await ff.writeFile('input.webm', await fetchFile(webmBlob));
-  await ff.exec(['-i','input.webm','-c:v','libx264','-preset','fast','-pix_fmt','yuv420p','output.mp4']);
-  const data = await ff.readFile('output.mp4');
-  const mp4Blob = new Blob([data.buffer], {type:'video/mp4'});
-  const url = URL.createObjectURL(mp4Blob);
+  await ff.exec(['-i','input.webm','-vf','fps=15,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer','output.gif']);
+  const data = await ff.readFile('output.gif');
+  const gifBlob = new Blob([data.buffer], {type:'image/gif'});
+  const url = URL.createObjectURL(gifBlob);
   const a = document.createElement('a');
-  a.href=url; a.download=name+'.mp4'; a.click();
+  a.href=url; a.download=name+'.gif'; a.click();
   URL.revokeObjectURL(url);
   await ff.deleteFile('input.webm');
-  await ff.deleteFile('output.mp4');
+  await ff.deleteFile('output.gif');
   setStatus('');
 }
 
@@ -460,7 +460,7 @@ function recordMode(idx) {
       recorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
       recorder.onstop = async () => {
         const webmBlob = new Blob(chunks, {type:'video/webm'});
-        await webmToMp4(webmBlob, NAMES[idx]);
+        await webmToGif(webmBlob, NAMES[idx]);
         resolve();
       };
       recorder.start();
@@ -482,7 +482,7 @@ async function recordAll() {
     await recordMode(i);
     await new Promise(r=>setTimeout(r,300));
   }
-  setStatus('✓ All 6 MP4s downloaded');
+  setStatus('✓ All 6 GIFs downloaded');
   btn.disabled=false; btn.classList.remove('recording');
   document.getElementById('exp-current').disabled=false;
   goTo(cur);
@@ -495,7 +495,7 @@ async function recordCurrent() {
   document.getElementById('exp-all').disabled=true;
   setStatus('Recording — ' + MODES[cur].name + '...');
   await recordMode(cur);
-  setStatus('✓ ' + NAMES[cur] + '.mp4 downloaded');
+  setStatus('✓ ' + NAMES[cur] + '.gif downloaded');
   btn.disabled=false; btn.classList.remove('recording');
   document.getElementById('exp-all').disabled=false;
   goTo(cur);
