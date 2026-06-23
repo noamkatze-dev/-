@@ -220,11 +220,22 @@ function runFixation() {
       ctx.strokeStyle=RED; ctx.lineWidth=3; ctx.stroke();
 
         ctx.fillStyle=RED;
-        ctx.font='400 13.4px HaimClassic,sans-serif'; // numbers: 13px * 1.032
-        ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-        ctx.fillText(Math.round(fix.duration), cx, cy+r+18);
-        ctx.font='500 13px HaimVariable,sans-serif';
-        ctx.fillText('ms', cx + ctx.measureText(Math.round(fix.duration)+'').width*0.5 + 3, cy+r+18);
+        const numStr = Math.round(fix.duration)+'';
+        const numSize = 13.4; // 13 * 1.032
+        const txtSize = 13;
+        ctx.font=`400 ${numSize}px HaimClassic,sans-serif`;
+        const numW = ctx.measureText(numStr).width;
+        ctx.font=`500 ${txtSize}px HaimVariable,sans-serif`;
+        const msW = ctx.measureText('ms').width;
+        const gap = 2;
+        const totalW = numW + gap + msW;
+        const startX = cx - totalW/2;
+        const labelY = cy + r + 18;
+        ctx.font=`400 ${numSize}px HaimClassic,sans-serif`;
+        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+        ctx.fillText(numStr, startX, labelY);
+        ctx.font=`500 ${txtSize}px HaimVariable,sans-serif`;
+        ctx.fillText('ms', startX + numW + gap, labelY);
       }
     }
   }
