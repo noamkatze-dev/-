@@ -18,47 +18,24 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#000;font-family:'HaimVariable',sans-serif;overflow:hidden;}
 
-/* Full-screen canvas area */
-#mc-right{
-  position:fixed;inset:0;width:100vw;height:100vh;
-  background:#c8e8f5;overflow:hidden;
-}
-#mc-canvas{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  display:block;
-}
+#mc-right{position:fixed;inset:0;width:100vw;height:100vh;background:#c8e8f5;overflow:hidden;}
+#mc-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
 
-/* UI overlay at bottom */
-.ui-overlay{
-  position:fixed;bottom:0;left:0;right:0;
-  padding:16px 28px;
-  display:flex;align-items:center;gap:16px;
-  background:linear-gradient(transparent, rgba(0,0,0,0.55));
-  z-index:10;
-}
+.ui-overlay{position:fixed;bottom:0;left:0;right:0;padding:16px 28px;display:flex;align-items:center;gap:16px;background:linear-gradient(transparent,rgba(0,0,0,0.55));z-index:10;}
 
-/* Mode info top-left */
-.mode-info{
-  position:fixed;top:28px;left:36px;z-index:10;
-  pointer-events:none;
-}
+.mode-info{position:fixed;top:28px;left:36px;z-index:10;pointer-events:none;}
 .mc-label{font-size:10px;font-weight:600;font-family:'HaimVariable',sans-serif;letter-spacing:0.1em;color:rgba(255,255,255,0.55);text-transform:uppercase;margin-bottom:4px;}
 .mc-title{font-size:26px;font-weight:500;font-family:'HaimVariable',sans-serif;color:#FF0000;margin-bottom:4px;line-height:1.1;text-shadow:0 1px 8px rgba(0,0,0,0.3);}
 .mc-desc{font-size:12px;font-family:'HaimVariable',sans-serif;color:rgba(255,255,255,0.7);line-height:1.55;max-width:340px;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
-.mc-num{font-size:11px;font-family:'HaimClassic',sans-serif;font-size:11.4px;color:rgba(255,255,255,0.5);}
 
-/* Nav dots top-right */
-.nav-area{
-  position:fixed;top:32px;right:36px;z-index:10;
-  display:flex;align-items:center;gap:10px;
-}
+.nav-area{position:fixed;top:32px;right:36px;z-index:10;display:flex;align-items:center;gap:10px;}
 .mc-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.6);background:rgba(0,0,0,0.25);backdrop-filter:blur(8px);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:#fff;transition:all 0.15s;flex-shrink:0;}
 .mc-btn:hover{background:rgba(255,255,255,0.15);}
 .mc-dots{display:flex;gap:6px;}
 .mc-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.35);cursor:pointer;transition:all 0.2s;}
 .mc-dot.active{background:#FF0000;transform:scale(1.3);}
-/* Export bar bottom */
+.mc-num{font-family:'HaimClassic',sans-serif;font-size:11.4px;color:rgba(255,255,255,0.5);}
+
 .exp-btn{font-family:'HaimVariable',sans-serif;font-size:11px;font-weight:500;letter-spacing:0.05em;padding:8px 18px;border-radius:100px;border:1.5px solid rgba(255,255,255,0.6);background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);color:#fff;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
 .exp-btn:hover{background:rgba(255,255,255,0.15);}
 .exp-btn:disabled{opacity:0.4;cursor:not-allowed;}
@@ -71,19 +48,14 @@ body{background:#000;font-family:'HaimVariable',sans-serif;overflow:hidden;}
 </head>
 <body>
 
-<!-- Full-screen canvas -->
-<div id="mc-right">
-  <canvas id="mc-canvas"></canvas>
-</div>
+<div id="mc-right"><canvas id="mc-canvas"></canvas></div>
 
-<!-- Mode info -->
 <div class="mode-info">
   <div class="mc-label">Analysis Mode</div>
   <div class="mc-title" id="mc-name"></div>
   <div class="mc-desc" id="mc-desc"></div>
 </div>
 
-<!-- Nav -->
 <div class="nav-area">
   <button class="mc-btn" id="mc-prev">‹</button>
   <div class="mc-dots" id="mc-dots"></div>
@@ -91,7 +63,6 @@ body{background:#000;font-family:'HaimVariable',sans-serif;overflow:hidden;}
   <div class="mc-num" id="mc-num"></div>
 </div>
 
-<!-- Export bar -->
 <div class="ui-overlay">
   <button class="exp-btn" id="exp-current">⬇ Download current</button>
   <button class="exp-btn" id="exp-all">⬇ Download all 6</button>
@@ -104,7 +75,6 @@ body{background:#000;font-family:'HaimVariable',sans-serif;overflow:hidden;}
 
 <script>
 const RED = '#FF0000';
-
 const MODES = [
   { name:'Gaze',          num:'01 / 06', desc:'Raw gaze positions sampled continuously — every point where the eye looked, frame by frame.' },
   { name:'Fixation',      num:'02 / 06', desc:'Sustained gaze on a single region for ≥200ms. Indicates active cognitive processing.' },
@@ -143,7 +113,6 @@ let skyImg = null;
 
 const _img = new Image();
 _img.onload = () => { skyImg = _img; };
-_img.onerror = () => { console.warn('sky.png not found — using solid background.'); };
 _img.src = 'sky.png';
 
 function drawBg() {
@@ -154,25 +123,41 @@ function drawBg() {
 function setup() {
   canvas = document.getElementById('mc-canvas');
   const dpr = window.devicePixelRatio || 1;
-  W = window.innerWidth;
-  H = window.innerHeight;
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
   ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
 }
 
 function drawArrow(fx, fy, tx, ty) {
-  ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(tx, ty); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(fx,fy); ctx.lineTo(tx,ty); ctx.stroke();
   const a = Math.atan2(ty-fy, tx-fx), l = 14;
   ctx.beginPath();
   ctx.moveTo(tx, ty);
   ctx.lineTo(tx - l*Math.cos(a-Math.PI/6), ty - l*Math.sin(a-Math.PI/6));
   ctx.lineTo(tx - l*Math.cos(a+Math.PI/6), ty - l*Math.sin(a+Math.PI/6));
   ctx.closePath(); ctx.fillStyle = RED; ctx.fill();
+}
+
+function drawFixLabel(cx, cy, r, duration) {
+  const numStr = Math.round(duration) + '';
+  const numSize = 13.4;
+  const txtSize = 13;
+  ctx.font = '400 ' + numSize + 'px HaimClassic,sans-serif';
+  const numW = ctx.measureText(numStr).width;
+  ctx.font = '500 ' + txtSize + 'px HaimVariable,sans-serif';
+  const msW = ctx.measureText('ms').width;
+  const gap = 2;
+  const startX = cx - (numW + gap + msW) / 2;
+  const labelY = cy + r + 18;
+  ctx.fillStyle = RED;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = '400 ' + numSize + 'px HaimClassic,sans-serif';
+  ctx.fillText(numStr, startX, labelY);
+  ctx.font = '500 ' + txtSize + 'px HaimVariable,sans-serif';
+  ctx.fillText('ms', startX + numW + gap, labelY);
 }
 
 function startAnim(idx) {
@@ -199,7 +184,7 @@ function runGaze() {
       d.age++;
       const alpha = Math.max(0,1-d.age/160);
       ctx.beginPath(); ctx.arc(d.x*W, d.y*H, 5, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(255,0,0,${(alpha*0.85).toFixed(2)})`; ctx.fill();
+      ctx.fillStyle = 'rgba(255,0,0,' + (alpha*0.85).toFixed(2) + ')'; ctx.fill();
     }
     t++; if(t%8===0) addDot();
     raf = requestAnimationFrame(draw);
@@ -218,40 +203,22 @@ function runFixation() {
       ctx.fillStyle='rgba(255,0,0,0.15)'; ctx.fill();
       ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
       ctx.strokeStyle=RED; ctx.lineWidth=3; ctx.stroke();
-
-        ctx.fillStyle=RED;
-        const numStr = Math.round(fix.duration)+'';
-        const numSize = 13.4; // 13 * 1.032
-        const txtSize = 13;
-        ctx.font=`400 ${numSize}px HaimClassic,sans-serif`;
-        const numW = ctx.measureText(numStr).width;
-        ctx.font=`500 ${txtSize}px HaimVariable,sans-serif`;
-        const msW = ctx.measureText('ms').width;
-        const gap = 2;
-        const totalW = numW + gap + msW;
-        const startX = cx - totalW/2;
-        const labelY = cy + r + 18;
-        ctx.font=`400 ${numSize}px HaimClassic,sans-serif`;
-        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-        ctx.fillText(numStr, startX, labelY);
-        ctx.font=`500 ${txtSize}px HaimVariable,sans-serif`;
-        ctx.fillText('ms', startX + numW + gap, labelY);
-      }
+      drawFixLabel(cx, cy, r, fix.duration);
     }
   }
   function draw(ts) {
     if(stopFlag) return;
     if(!start) start=ts;
-    const elapsed=ts-start;
+    const elapsed = ts-start;
     drawBg();
     if(phase==='grow') {
       const fix=fixHist[fIdx], prog=Math.min(1,elapsed/550);
       const cx=fix.x*W, cy=fix.y*H, r=maxR(fix.duration)*prog;
       drawAll();
       ctx.beginPath(); ctx.arc(cx,cy,Math.max(1,r),0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,0,0,${(0.15*prog).toFixed(2)})`; ctx.fill();
+      ctx.fillStyle='rgba(255,0,0,' + (0.15*prog).toFixed(2) + ')'; ctx.fill();
       ctx.beginPath(); ctx.arc(cx,cy,Math.max(1,r),0,Math.PI*2);
-      ctx.strokeStyle=`rgba(255,0,0,${prog.toFixed(2)})`; ctx.lineWidth=3; ctx.stroke();
+      ctx.strokeStyle='rgba(255,0,0,' + prog.toFixed(2) + ')'; ctx.lineWidth=3; ctx.stroke();
       if(prog>=1) { shown.push(fix); fIdx=(fIdx+1)%fixHist.length; phase='wait'; start=ts; }
     } else {
       drawAll();
@@ -321,7 +288,7 @@ function runScanPath() {
       ctx.beginPath(); ctx.arc(cx,cy,NODE_R,0,Math.PI*2);
       ctx.strokeStyle=RED; ctx.lineWidth=3; ctx.stroke();
       ctx.fillStyle=RED;
-      ctx.font=`400 ${Math.round(NODE_R*0.9*1.032)}px HaimClassic,sans-serif`;
+      ctx.font='400 ' + Math.round(NODE_R*0.9*1.032) + 'px HaimClassic,sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(j+1, cx, cy);
     }
@@ -364,7 +331,7 @@ function runHeatmap() {
     if(mx<0.01) return;
     const M=8, levels=[0.15,0.30,0.50,0.70,0.88];
     for(const lv of levels) {
-      ctx.strokeStyle=`rgba(255,0,0,${Math.min(1,0.35+lv*0.65).toFixed(2)})`;
+      ctx.strokeStyle='rgba(255,0,0,' + Math.min(1,0.35+lv*0.65).toFixed(2) + ')';
       ctx.lineWidth=3.5; ctx.beginPath();
       for(let cy2=0;cy2<hmH-1;cy2++) for(let cx2=0;cx2<hmW-1;cx2++) {
         const vTL=hm[cy2*hmW+cx2]/mx, vTR=hm[cy2*hmW+(cx2+1)]/mx;
@@ -403,9 +370,9 @@ function runFirstFix() {
     if(phase==='flash') {
       const prog=Math.min(1,elapsed/700);
       ctx.beginPath(); ctx.arc(cx,cy,12+prog*60,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(255,0,0,${((1-prog)*0.85).toFixed(2)})`; ctx.lineWidth=3; ctx.stroke();
+      ctx.strokeStyle='rgba(255,0,0,' + ((1-prog)*0.85).toFixed(2) + ')'; ctx.lineWidth=3; ctx.stroke();
       ctx.beginPath(); ctx.arc(cx,cy,Math.max(2,20*prog),0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,0,0,${prog.toFixed(2)})`; ctx.fill();
+      ctx.fillStyle='rgba(255,0,0,' + prog.toFixed(2) + ')'; ctx.fill();
       if(prog>=1) { phase='pulse'; start=ts; }
     } else {
       const pt=(elapsed%1400)/1400, pr=20+Math.sin(pt*Math.PI*2)*8;
@@ -413,7 +380,8 @@ function runFirstFix() {
       ctx.strokeStyle='rgba(255,0,0,0.45)'; ctx.lineWidth=2; ctx.stroke();
       ctx.beginPath(); ctx.arc(cx,cy,20,0,Math.PI*2);
       ctx.fillStyle=RED; ctx.fill();
-      ctx.fillStyle=RED; ctx.font='500 14px HaimVariable,sans-serif';
+      ctx.fillStyle=RED;
+      ctx.font='500 14px HaimVariable,sans-serif';
       ctx.textAlign='center'; ctx.textBaseline='alphabetic';
       ctx.fillText('First fixation', cx, cy-50);
       if(elapsed>2200) { phase='flash'; start=ts; }
@@ -423,7 +391,6 @@ function runFirstFix() {
   raf = requestAnimationFrame(draw);
 }
 
-// ── Recording ─────────────────────────────────────────────────────────
 function getRecordDuration() {
   return (parseFloat(document.getElementById('rec-dur').value)||5)*1000;
 }
@@ -434,8 +401,7 @@ function recordMode(idx) {
     setTimeout(() => {
       stopFlag=false; setup();
       const stream = canvas.captureStream(30);
-      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-        ? 'video/webm;codecs=vp9' : 'video/webm';
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
       const recorder = new MediaRecorder(stream, {mimeType});
       const chunks = [];
       recorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
@@ -443,7 +409,7 @@ function recordMode(idx) {
         const blob = new Blob(chunks, {type:'video/webm'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href=url; a.download=`${NAMES[idx]}.webm`; a.click();
+        a.href=url; a.download=NAMES[idx]+'.webm'; a.click();
         URL.revokeObjectURL(url);
         resolve();
       };
@@ -463,7 +429,7 @@ async function recordAll() {
   btn.disabled=true; btn.classList.add('recording');
   document.getElementById('exp-current').disabled=true;
   for(let i=0;i<6;i++) {
-    status.textContent=`Recording ${i+1}/6 — ${MODES[i].name}...`;
+    status.textContent='Recording ' + (i+1) + '/6 — ' + MODES[i].name + '...';
     await recordMode(i);
     await new Promise(r=>setTimeout(r,300));
   }
@@ -479,9 +445,9 @@ async function recordCurrent() {
   const status=document.getElementById('exp-status');
   btn.disabled=true; btn.classList.add('recording');
   document.getElementById('exp-all').disabled=true;
-  status.textContent=`Recording — ${MODES[cur].name}...`;
+  status.textContent='Recording — ' + MODES[cur].name + '...';
   await recordMode(cur);
-  status.textContent=`✓ ${NAMES[cur]}.webm downloaded`;
+  status.textContent='✓ ' + NAMES[cur] + '.webm downloaded';
   btn.disabled=false; btn.classList.remove('recording');
   document.getElementById('exp-all').disabled=false;
   goTo(cur);
@@ -491,7 +457,6 @@ async function recordCurrent() {
 document.getElementById('exp-current').onclick = recordCurrent;
 document.getElementById('exp-all').onclick = recordAll;
 
-// ── Nav ───────────────────────────────────────────────────────────────
 function goTo(n) {
   cur=(n+6)%6;
   document.getElementById('mc-name').textContent=MODES[cur].name;
